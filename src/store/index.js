@@ -95,7 +95,7 @@ export default new Vuex.Store({
       commit('SET_BASEDAMAGE', 5);
     },
     async joinroom({ commit, dispatch }, payload) {
-      const { roomName, player } = payload;
+      const { roomName } = payload;
       let roomPlayers = null;
       let isExist = false;
       let udahPlay;

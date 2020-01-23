@@ -5,10 +5,10 @@
 </template>
 
 <script>
-import test from '@/components/test.vue';
+// import test from '@/components/test.vue';
 
 export default {
-  components: { test, },
+  // components: { test, },
   data() {
     return {
       message: 'Hello world',
@@ -30,6 +30,11 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  background: url('./assets/background3.gif')no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover; 
 }
 
 #nav {
