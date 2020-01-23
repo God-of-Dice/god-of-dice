@@ -1,9 +1,18 @@
 <template>
   <div id="gameroom" class="about h-100">
     <div class="character" id="character">
-      <img v-if="animated===true" src="../assets/slash.gif" id="cloud" alt="" style="z-index:1;">
-      <img :class="{'bounce animated': animated}" @animationend="animationEnd" src="../assets/cloud.gif" id="cloud">
-      <img @click="animate" src="../assets/lightning.gif" id="lightning">
+      <button @click="rollthedice" id="rolldice">ROLL DICE</button>
+      <img v-if="diceroll===true" :class="{'roll animated': diceroll}" @animationend="diceend" src="../assets/dice.gif" id="dice">
+      <img v-if="diceroll===false" :src="require(`../assets/${diceResult}.png`)" id="diceResult">
+
+      <button @click="animateCloud" id="rolldice">Attack cloud</button>
+      <button @click="animateLightning" id="rolldice">Attack lightning</button>
+      
+      <img :class="{'bounce animated': animatedCloud}" @animationend="animationEnd" src="../assets/cloud.gif" id="cloud">
+      <img v-if="animatedCloud===true" src="../assets/slash.gif" id="cloud" alt="" style="z-index:1;">
+
+      <img :class="{'bounce animated': animatedLightning}" @animationend="animationEnd" src="../assets/lightning.gif" id="lightning">
+      <img v-if="animatedLightning===true" src="../assets/slash.gif" id="lightning" alt="" style="z-index:1;transform: scaleX(1); right : 16rem;">
     </div>
   </div>
 </template>
@@ -17,17 +26,35 @@ export default {
   },
   data(){
     return {
-      animated : false,
+      animatedCloud : false,
+      animatedLightning : false,
+      diceroll : false,
+      diceResult : 1,
     }
   },
   methods: {
     animationEnd(){
-      this.animated = false
+      this.animatedCloud = false
+      this.animatedLightning = false
     },
-    animate() {
-      console.log("masuk animated")
-      this.animated = true
-      console.log(this.animated)
+    animateCloud() {
+      this.animatedCloud = true
+    },
+    animateLightning() {
+      this.animatedLightning = true
+    },
+    rollthedice(){
+      this.diceroll = true
+      this.diceResult = Math.floor(Math.random()*6)
+      setTimeout(()=>{
+        this.diceroll = false
+      },2000)
+    },
+    diceend(){
+      this.diceroll = false
+    },
+    diceImageGenerator(){
+      return `../assets/slash.gif`
     }
   }
 }
@@ -36,6 +63,16 @@ export default {
 <style>
 #id{
   height: 100%;
+}
+
+#diceResult{
+  position: absolute;
+  margin : auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom : 0;
+  height: 120px;
 }
 
 #cloud{
@@ -55,6 +92,20 @@ export default {
 
 .bounce{
   animation: shake 0.5s; 
+}
+
+.roll{
+  animation: shake 3s; 
+}
+
+#dice{
+  position: absolute;
+  margin : auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom : 0;
+  height: 180px;
 }
 
 @keyframes shake {
