@@ -2,17 +2,16 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import db from '../../config/firebase';
 import swal from 'sweetalert2';
+import router from '../router/index'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    unsubscribe: null,
     isPlay: false,
     name: '',
-    players: [
-      {},
-      {},
-    ],
+    players: [],
     myRoom: '',
     turn: 1,
     myIndex: 0,
@@ -34,55 +33,91 @@ export default new Vuex.Store({
   },
   mutations: {
     SET_ISPLAY(state, payload) {
+      console.log("ini set isplay : ,"+payload)
       state.isPlay = payload;
     },
     SET_NAME(state, payload) {
+      console.log("ini set name : "+payload)
       state.name = payload
     },
     SET_PLAYERS(state, payload) {
+      console.log("ini set players : " + payload)
       state.players = payload;
     },
     SET_MYROOM(state, payload) {
+      console.log("ini set room : "+ payload)
       state.myRoom = payload
     },
     SET_MYINDEX(state, payload) {
+      console.log("ini set my index: " +payload)
       state.myIndex = payload
     },
     SET_TURN(state, payload) {
+      console.log("ini set turn " +payload)
       state.turn = payload;
     },
     SET_ENEMY(state, payload) {
+      console.log("ini set enemy turn " +payload)
       state.enemy = payload;
     },
     SET_BASEDAMAGE(state, payload) {
+      console.log("ini set base damage " +payload)
       state.baseDamage = payload;
+      console.log("ini state.baseDamage "+state.baseDamage)
+    },
+    SET_UNSUBSCRIBE(state, payload) {
+      state.unsubscribe = payload;
     },
   },
   actions: {
-    fetchData({ commit, getters }) {
+    fetchData({ commit, getters, dispatch }) {
       const roomId = getters.getRoomId
       if (!roomId) {
         console.log('not joined any rooms yet...');
       } else {
-        db.collection('rooms').onSnapshot((gameRooms) => {
-          gameRooms.forEach((room) => {
+        const unsubscribe = db.collection('rooms').doc(roomId).onSnapshot((room) => {
             const data = room.data();
-            const id = room.id;
-            if (id === roomId) {
+              console.log("=============================================== disini")
+              console.log(data)
               commit('SET_PLAYERS', data.players);
               commit('SET_ISPLAY', data.isPlay);
               commit('SET_NAME', data.name);
               commit('SET_MYNAME', data.players[getters.getMyIndex].name)
               commit('SET_TURN', data.turn);
-            }
+
+              data.players.forEach(player => {
+                if(player.hp <= 0 ){
+                  swal.fire({
+                    title: `${player.name} WON!`,
+                    width: 600,
+                    padding: '3em',
+                    background: '#fff url(/images/trees.png)',
+                    backdrop: `
+                      rgba(0,0,123,0.4)
+                      url("/images/nyan-cat.gif")
+                      left top
+                      no-repeat
+                    `
+                  })
+                  let sound = new Audio(require('@/assets/soundgroup/wow.mp3'))
+                  sound.play()
+                  dispatch('unsubscribe')
+                }
+              });
             // this block is to check game is finish or not...
             // data.players.forEach(player => {
             //   if (player.hp <= 0) {
             //   }
             // });
           })
-        })
+        commit('SET_UNSUBSCRIBE', unsubscribe)
       }
+    },
+    unsubscribe({commit, state}) {
+      if (typeof state.unsubscribe === 'function')
+        state.unsubscribe()
+      commit('SET_UNSUBSCRIBE', null)
+      router.push('/login')
     },
     async hit({ getters, commit }, payload) {
       const damage = payload*getters.getBaseDamage;
@@ -95,14 +130,17 @@ export default new Vuex.Store({
       commit('SET_BASEDAMAGE', 5);
     },
     async joinroom({ commit, dispatch }, payload) {
-      const { roomName } = payload;
+      console.log('line 98')
+      // let self = this
+      const { roomName, player } = payload;
       let roomPlayers = null;
       let isExist = false;
       let udahPlay;
       let roomId = null;
       try {
+        console.log(' ini di line 105')
         const rooms = await db.collection('rooms').where('name', '==', roomName).get()
-        rooms.forEach(room => {
+        rooms.forEach(function(room){
           const data = room.data();
           const { name } = data
           if (name === roomName) {
@@ -115,6 +153,7 @@ export default new Vuex.Store({
           }
         });
         if (!isExist) {
+          console.log("room deosnt exist : 120")
           swal.fire({
             title: "Room doesn't exist",
             text: 'You want to create this room?',
@@ -123,7 +162,8 @@ export default new Vuex.Store({
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, create it!'
-          }).then((result) => {
+          }).then(function(result) {
+            console.log('buar room baru : 130')
             if (result.value) {
               const docData = {
                 name: roomName,
@@ -137,8 +177,8 @@ export default new Vuex.Store({
                 winner: '',
               }
               db.collection('rooms')
-                .add(docData)
-                .then((rooms) => {
+              .add(docData)
+                .then(function(rooms) {
                   commit('SET_MYROOM', rooms.id);
                   commit('SET_MYINDEX', 0);
                   commit('SET_ENEMY', 1);
@@ -148,9 +188,11 @@ export default new Vuex.Store({
                     'Your file has been created, invite your friend!',
                     'success'
                     )
+                  console.log("disini pindah room...")
+                  router.push('/about');
                 })
                 .catch(() =>{
-                  swal.fire('Oppss...')
+                  swal.fire('Oppss... Internal Server Error')
                 })
             }
           })
@@ -173,7 +215,7 @@ export default new Vuex.Store({
               commit('SET_MYINDEX', 1);
               commit('SET_ENEMY', 0);
               swal.fire('Joined!')
-              // push ke halaman room
+              router.push('/about');
             })
             .catch()
           }
@@ -196,11 +238,12 @@ export default new Vuex.Store({
         winner: '',
       };
       try {
+        console.log('ini di line 200')
         const rooms = await db.collection('rooms').add(docData)
         commit('SET_MYROOM', rooms.id);
         dispatch('fetchData');
-        alert(rooms.id);
-        
+        this.$router.push({path : '/about'})
+
       } catch (err) {
         console.log(err);
       }
@@ -224,5 +267,8 @@ export default new Vuex.Store({
     getEnemy(state) {
       return state.enemy;
     },
+    getMyHp(state){
+      return state.players[0].hp
+    }
   },
 })

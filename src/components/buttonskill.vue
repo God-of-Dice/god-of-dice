@@ -1,9 +1,9 @@
 <template>
     <div>
     <i id='shield' class="fas fa-shield-alt skill" @click="skill"> Shield</i>
-    <i class="fas fa-khanda skill" @click="skill"> Double Attack</i>
+    <i v-if="doubleattack" class="fas fa-khanda skill" @click="skill"> Double Attack</i>
     <i class="fas fa-skull-crossbones skill" @click="skill"> Secret</i>
-    <bar></bar>
+    <!-- <bar></bar> -->
     </div>
 </template>
 
@@ -14,19 +14,19 @@ export default {
   },
   data () {
     return {
-      health1: 100
+      doubleattack: true
     }
   },
   methods: {
     skill: function () {
       let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
       sound.play()
-      this.decrease()
+      this.doubleattack = false
+      this.$store.commit('SET_BASEDAMAGE', 10)
     },
     decrease: function () {
       let sound = new Audio(require('../assets/soundgroup/clickButton.ogg'))
       sound.play()
-      this.$store.dispatch('DECREASE1', 10)
     },
     decrease1: function () {
     //   this.health1 = this.health1 -10
