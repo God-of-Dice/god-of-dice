@@ -18,6 +18,7 @@
             v-model="player"
           />
           <button type="submit" class="btn-enter" @click.prevent="createClick">Enter</button>
+          <button @click.prevent="keGameRoom">ke gameroom</button>
 
         </form>
       </div>
@@ -36,6 +37,9 @@ export default {
         }
     },
     methods: {
+      keGameRoom(){
+        this.$router.push('/about')
+      },
         createClick() {
             const payload = {
                 roomName: this.room,

@@ -1,9 +1,9 @@
 <template>
     <div>
-    <i id='shield' class="fas fa-shield-alt skill" @click="skill"> Shield</i>
-    <i class="fas fa-khanda skill" @click="skill"> Double Attack</i>
-    <i class="fas fa-skull-crossbones skill" @click="skill"> Secret</i>
-    <bar></bar>
+    <i v-if="heal" id='shield' class="fas fa-shield-alt skill" @click="doHeal"> Heal</i>
+    <i v-if="doubleattack" class="fas fa-khanda skill" @click="skill"> Double Attack</i>
+    <i v-if="suicide" class="fas fa-skull-crossbones skill" @click="doSuicide"> Secret</i>
+    <!-- <bar></bar> -->
     </div>
 </template>
 
@@ -14,21 +14,29 @@ export default {
   },
   data () {
     return {
-      health1: 100
+      doubleattack: true,
+      heal : true,
+      suicide : true
     }
   },
   methods: {
     skill: function () {
       let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
       sound.play()
+      this.doubleattack = false
+      this.$store.commit('SET_BASEDAMAGE', 10)
     },
-    decrease: function () {
-      let sound = new Audio(require('../assets/soundgroup/clickButton.ogg'))
+    doHeal: function () {
+      let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
       sound.play()
-      this.$store.dispatch('DECREASE1', 10)
+      this.heal = false
+      this.$store.commit("SET_HEAL")
     },
-    decrease1: function () {
-    //   this.health1 = this.health1 -10
+    doSuicide: function () {
+      let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
+      sound.play()
+      this.suicide = false
+      this.$store.commit("SET_SUICIDE")
     }
   },
   computed: {
