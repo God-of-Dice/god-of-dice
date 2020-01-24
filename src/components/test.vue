@@ -3,13 +3,10 @@
     <h2>Nama room</h2>
     nama player:
     <input type="text" v-model="playerName"><br>
-    nama room:
-    <input type="text" v-model="roomName"><br>
-    <button @click="create" >Create</button>
-    <hr>
     Join room:
     <input type="text" v-model="roomName">
     <button @click="join">JOIN</button>
+    <hr>
   </section>
 </template>
 

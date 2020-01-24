@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import db from '../../config/firebase';
+import swal from 'sweetalert2';
 
 Vue.use(Vuex)
 
@@ -14,6 +15,8 @@ export default new Vuex.Store({
     ],
     myRoom: '',
     turn: '',
+    myIndex: null,
+    myName: '',
   },
   mutations: {
     SET_ISPLAY(state, payload) {
@@ -27,6 +30,9 @@ export default new Vuex.Store({
     },
     SET_MYROOM(state, payload) {
       state.myRoom = payload
+    },
+    SET_MYINDEX(state, payload) {
+      state.myIndex = payload
     },
   },
   actions: {
@@ -52,6 +58,7 @@ export default new Vuex.Store({
       const { roomName, player } = payload;
       let roomPlayers = null;
       let isExist = false;
+      let countPlayer = 0;
       let roomId = null;
       try {
         const rooms = await db.collection('rooms').where('name', '==', roomName).get()
@@ -62,15 +69,54 @@ export default new Vuex.Store({
             isExist = true;
             roomId = room.id;
             roomPlayers = data.players;
+            countPlayer = data.players.length;
           }
         });
         if (!isExist) {
-          alert('gaada')
+          swal.fire({
+            title: "Room doesn't exist",
+            text: 'You want to create this room?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, create it!'
+          }).then((result) => {
+            if (result.value) {
+              const docData = {
+                name: roomName,
+                isPlay: false,
+                players: [{
+                  name: player,
+                  hp: 100,
+                }],
+                turn: 0,
+              }
+              db.collection('rooms')
+                .add(docData)
+                .then((rooms) => {
+                  commit('SET_MYROOM', rooms.id);
+                  dispatch('fetchData');
+                  alert(rooms.id);
+                  swal.fire(
+                    'Created!',
+                    'Your file has been created, invite your friend!',
+                    'success'
+                    )
+                })
+                .catch(() =>{
+                  swal.fire('Oppss...')
+                })
+            }
+          })
         } else {
-          // check room full ato engga
+          // check room full ato engga,
+          // if (countPlayer > 2) {
+          //   swal.fire('Room is full, sorry');
+          // }
           const newPlayer = {
-            name: `player`,
-            hp: 1000,
+            name: player,
+            hp: 100,
             turn: false,
           };
           roomPlayers.push(newPlayer);
@@ -81,7 +127,8 @@ export default new Vuex.Store({
           .then(() => {
             commit('SET_MYROOM', roomId);
             dispatch('fetchData');
-            alert('joined');
+            swal.fire('Joined!')
+            // push ke halaman room
           })
           .catch()
         }
