@@ -32,37 +32,28 @@ export default new Vuex.Store({
   },
   mutations: {
     SET_ISPLAY(state, payload) {
-      console.log("ini set isplay : ,"+payload)
       state.isPlay = payload;
     },
     SET_NAME(state, payload) {
-      console.log("ini set name : "+payload)
       state.name = payload
     },
     SET_PLAYERS(state, payload) {
-      console.log("ini set players : " + payload)
       state.players = payload;
     },
     SET_MYROOM(state, payload) {
-      console.log("ini set room : "+ payload)
       state.myRoom = payload
     },
     SET_MYINDEX(state, payload) {
-      console.log("ini set my index: " +payload)
       state.myIndex = payload
     },
     SET_TURN(state, payload) {
-      console.log("ini set turn " +payload)
       state.turn = payload;
     },
     SET_ENEMY(state, payload) {
-      console.log("ini set enemy turn " +payload)
       state.enemy = payload;
     },
     SET_BASEDAMAGE(state, payload) {
-      console.log("ini set base damage " +payload)
       state.baseDamage = payload;
-      console.log("ini state.baseDamage "+state.baseDamage)
     },
     SET_UNSUBSCRIBE(state, payload) {
       state.unsubscribe = payload;
@@ -78,12 +69,10 @@ export default new Vuex.Store({
     fetchData({ commit, getters }) {
       const roomId = getters.getRoomId
       if (!roomId) {
-        console.log('not joined any rooms yet...');
+        swal.fire("JOIN A ROOM")
       } else {
         const unsubscribe = db.collection('rooms').doc(roomId).onSnapshot((room) => {
             const data = room.data();
-              console.log("=============================================== disini")
-              console.log(data)
               commit('SET_PLAYERS', data.players);
               commit('SET_ISPLAY', data.isPlay);
               commit('SET_NAME', data.name);
@@ -129,7 +118,6 @@ export default new Vuex.Store({
       commit('SET_BASEDAMAGE', 5);
     },
     async joinroom({ commit, dispatch }, payload) {
-      console.log('line 98')
       // let self = this
       const { roomName, player } = payload;
       let roomPlayers = null;
@@ -137,7 +125,6 @@ export default new Vuex.Store({
       let udahPlay;
       let roomId = null;
       try {
-        console.log(' ini di line 105')
         const rooms = await db.collection('rooms').where('name', '==', roomName).get()
         rooms.forEach(function(room){
           const data = room.data();
@@ -148,11 +135,9 @@ export default new Vuex.Store({
             udahPlay = room.isPlay;
             roomPlayers = data.players;
             udahPlay = data.isPlay;
-            console.log(data.isPlay);
           }
         });
         if (!isExist) {
-          console.log("room deosnt exist : 120")
           swal.fire({
             title: "Room doesn't exist",
             text: 'You want to create this room?',
@@ -162,7 +147,6 @@ export default new Vuex.Store({
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, create it!'
           }).then(function(result) {
-            console.log('buar room baru : 130')
             if (result.value) {
               const docData = {
                 name: roomName,
@@ -187,7 +171,6 @@ export default new Vuex.Store({
                     'Your file has been created, invite your friend!',
                     'success'
                     )
-                  console.log("disini pindah room...")
                   router.push('/about');
                 })
                 .catch(() =>{
@@ -220,7 +203,7 @@ export default new Vuex.Store({
           }
         }
       } catch (err) {
-        console.log(err);
+        swal.fire("Internal server error")
       }
     },
     async createRoom({ commit, dispatch }, payload) {
@@ -237,14 +220,13 @@ export default new Vuex.Store({
         winner: '',
       };
       try {
-        console.log('ini di line 200')
         const rooms = await db.collection('rooms').add(docData)
         commit('SET_MYROOM', rooms.id);
         dispatch('fetchData');
         this.$router.push({path : '/about'})
 
       } catch (err) {
-        console.log(err);
+        swal.fire("Internal server error")
       }
     },
   },
