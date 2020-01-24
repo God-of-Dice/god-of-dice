@@ -7,7 +7,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    isPlay: true,
+    isPlay: false,
     name: '',
     players: [
       {},
@@ -59,6 +59,12 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    DECREASE1 (action, payload) {
+      action.commit('SET_DECREASE1', payload)
+    },
+    DECREASE2 (action, payload) {
+      action.commit('SET_DECREASE2', payload)
+    },
     fetchData({ commit, getters }) {
       const roomId = getters.getRoomId
       if (!roomId) {
