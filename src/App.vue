@@ -14,6 +14,12 @@ export default {
       message: 'Hello world',
     };
   },
+  methods: {
+    roll() {
+      const damage = (Math.floor(Math.random()*6)+1)
+      this.$store.dispatch('hit', damage);
+    },
+  },
 };
 </script>
 
