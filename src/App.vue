@@ -1,13 +1,21 @@
 <template>
   <div id="app">
-    <!-- <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> | 
-    </div> -->
-    <!-- <router-link to="/login">Login</router-link> -->
     <router-view/>
   </div>
 </template>
+
+<script>
+import test from '@/components/test.vue';
+
+export default {
+  components: { test, },
+  data() {
+    return {
+      message: 'Hello world',
+    };
+  },
+};
+</script>
 
 <style>
 #app {
