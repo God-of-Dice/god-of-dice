@@ -7,16 +7,30 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    isPlay: false,
+    isPlay: true,
     name: '',
     players: [
       {},
       {},
     ],
     myRoom: '',
-    turn: '',
-    myIndex: null,
+    turn: 1,
+    myIndex: 0,
     myName: '',
+    baseDamage: 5,
+    enemy: null,
+    skill1: {
+      isUse: false,
+      baseDamage: 10,
+    },
+    skill2: {
+      isUse: false,
+      baseDamage: 6,
+    },
+    skill3: {
+      isUse: false,
+      baseDamage: 7,
+    },
   },
   mutations: {
     SET_ISPLAY(state, payload) {
@@ -34,6 +48,15 @@ export default new Vuex.Store({
     SET_MYINDEX(state, payload) {
       state.myIndex = payload
     },
+    SET_TURN(state, payload) {
+      state.turn = payload;
+    },
+    SET_ENEMY(state, payload) {
+      state.enemy = payload;
+    },
+    SET_BASEDAMAGE(state, payload) {
+      state.baseDamage = payload;
+    },
   },
   actions: {
     fetchData({ commit, getters }) {
@@ -49,16 +72,29 @@ export default new Vuex.Store({
               commit('SET_PLAYERS', data.players);
               commit('SET_ISPLAY', data.isPlay);
               commit('SET_NAME', data.name);
+              commit('SET_MYNAME', data.players[getters.getMyIndex].name)
+              commit('SET_TURN', data.turn);
             }
           })
         })
       }
     },
+    async hit({ getters, commit }, payload) {
+      const damage = payload*getters.getBaseDamage;
+      const players = getters.getPlayers;
+      players[getters.getEnemy].hp -= damage
+      db.collection('rooms').doc(getters.getRoomId).update({
+        turn: getters.getEnemy,
+        players,
+      });
+      commit('SET_BASEDAMAGE', 5);
+    },
     async joinroom({ commit, dispatch }, payload) {
       const { roomName, player } = payload;
       let roomPlayers = null;
       let isExist = false;
-      let countPlayer = 0;
+      let udahPlay;
+      // let countPlayer = 0;
       let roomId = null;
       try {
         const rooms = await db.collection('rooms').where('name', '==', roomName).get()
@@ -68,8 +104,10 @@ export default new Vuex.Store({
           if (name === roomName) {
             isExist = true;
             roomId = room.id;
+            udahPlay = room.isPlay;
             roomPlayers = data.players;
-            countPlayer = data.players.length;
+            udahPlay = data.isPlay;
+            console.log(data.isPlay);
           }
         });
         if (!isExist) {
@@ -96,6 +134,8 @@ export default new Vuex.Store({
                 .add(docData)
                 .then((rooms) => {
                   commit('SET_MYROOM', rooms.id);
+                  commit('SET_MYINDEX', 0);
+                  commit('SET_ENEMY', 1);
                   dispatch('fetchData');
                   alert(rooms.id);
                   swal.fire(
@@ -110,27 +150,33 @@ export default new Vuex.Store({
             }
           })
         } else {
-          // check room full ato engga,
-          // if (countPlayer > 2) {
-          //   swal.fire('Room is full, sorry');
-          // }
-          const newPlayer = {
-            name: player,
-            hp: 100,
-            turn: false,
-          };
-          roomPlayers.push(newPlayer);
-          db.collection('rooms').doc(roomId).update({
-            isPlay: true,
-            players: roomPlayers,
-          })
-          .then(() => {
-            commit('SET_MYROOM', roomId);
-            dispatch('fetchData');
-            swal.fire('Joined!')
-            // push ke halaman room
-          })
-          .catch()
+          if (udahPlay) {
+            swal.fire('GABISA BOS')
+          } else {
+
+            // check room full ato engga,
+            // if (countPlayer > 2) {
+            //   swal.fire('Room is full, sorry');
+            // }
+            const newPlayer = {
+              name: player,
+              hp: 100,
+            };
+            roomPlayers.push(newPlayer);
+            db.collection('rooms').doc(roomId).update({
+              isPlay: true,
+              players: roomPlayers,
+            })
+            .then(() => {
+              commit('SET_MYROOM', roomId);
+              dispatch('fetchData');
+              commit('SET_MYINDEX', 1);
+              commit('SET_ENEMY', 0);
+              swal.fire('Joined!')
+              // push ke halaman room
+            })
+            .catch()
+          }
         }
       } catch (err) {
         console.log(err);
@@ -144,8 +190,8 @@ export default new Vuex.Store({
         players: [{
           name: player,
           hp: 100,
-          turn: true,
         }],
+        turn: 0,
       };
       try {
         const rooms = await db.collection('rooms').add(docData)
@@ -163,6 +209,18 @@ export default new Vuex.Store({
   getters: {
     getRoomId(state) {
       return state.myRoom;
+    },
+    getMyIndex(state) {
+      return state.myIndex;
+    },
+    getBaseDamage(state) {
+      return state.baseDamage;
+    },
+    getPlayers(state) {
+      return state.players;
+    },
+    getEnemy(state) {
+      return state.enemy;
     },
   },
 })
