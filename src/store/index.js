@@ -59,16 +59,10 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    DECREASE1 (action, payload) {
-      action.commit('SET_DECREASE1', payload)
-    },
-    DECREASE2 (action, payload) {
-      action.commit('SET_DECREASE2', payload)
-    },
     fetchData({ commit, getters }) {
       const roomId = getters.getRoomId
       if (!roomId) {
-        console.log('not joined any rooms');
+        console.log('not joined any rooms yet...');
       } else {
         db.collection('rooms').onSnapshot((gameRooms) => {
           gameRooms.forEach((room) => {
@@ -81,6 +75,11 @@ export default new Vuex.Store({
               commit('SET_MYNAME', data.players[getters.getMyIndex].name)
               commit('SET_TURN', data.turn);
             }
+            // this block is to check game is finish or not...
+            // data.players.forEach(player => {
+            //   if (player.hp <= 0) {
+            //   }
+            // });
           })
         })
       }
@@ -100,7 +99,6 @@ export default new Vuex.Store({
       let roomPlayers = null;
       let isExist = false;
       let udahPlay;
-      // let countPlayer = 0;
       let roomId = null;
       try {
         const rooms = await db.collection('rooms').where('name', '==', roomName).get()
@@ -135,6 +133,8 @@ export default new Vuex.Store({
                   hp: 100,
                 }],
                 turn: 0,
+                isWin: false,
+                winner: '',
               }
               db.collection('rooms')
                 .add(docData)
@@ -143,7 +143,6 @@ export default new Vuex.Store({
                   commit('SET_MYINDEX', 0);
                   commit('SET_ENEMY', 1);
                   dispatch('fetchData');
-                  alert(rooms.id);
                   swal.fire(
                     'Created!',
                     'Your file has been created, invite your friend!',
@@ -157,13 +156,8 @@ export default new Vuex.Store({
           })
         } else {
           if (udahPlay) {
-            swal.fire('GABISA BOS')
+            swal.fire('Opps... the room is full')
           } else {
-
-            // check room full ato engga,
-            // if (countPlayer > 2) {
-            //   swal.fire('Room is full, sorry');
-            // }
             const newPlayer = {
               name: player,
               hp: 100,
@@ -198,6 +192,8 @@ export default new Vuex.Store({
           hp: 100,
         }],
         turn: 0,
+        isWin: false,
+        winner: '',
       };
       try {
         const rooms = await db.collection('rooms').add(docData)
