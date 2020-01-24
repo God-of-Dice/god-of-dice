@@ -21,6 +21,7 @@ export default {
     skill: function () {
       let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
       sound.play()
+      this.decrease()
     },
     decrease: function () {
       let sound = new Audio(require('../assets/soundgroup/clickButton.ogg'))

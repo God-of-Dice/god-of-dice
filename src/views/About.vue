@@ -7,8 +7,11 @@
 
       <button @click="animateCloud" id="rolldice">Attack cloud</button>
       <button @click="animateLightning" id="rolldice">Attack lightning</button>
+
+      <buttonSkill id="buttonSkill"></buttonSkill>
+      <health class="ml-5 mr-5"></health>
       
-      <img :class="{'bounce animated': animatedCloud}" @animationend="animationEnd" src="../assets/cloud.gif" id="cloud">
+      <img :class="{'bounce animated': animatedCloud}" @animationend="animationEnd" src="../assets/git .gif" id="cloud">
       <img v-if="animatedCloud===true" src="../assets/slash.gif" id="cloud" alt="" style="z-index:1;">
 
       <img :class="{'bounce animated': animatedLightning}" @animationend="animationEnd" src="../assets/lightning.gif" id="lightning">
@@ -18,11 +21,14 @@
 </template>
 
 <script>
+import buttonSkill from '../components/buttonskill'
+import health from '../components/healt'
 
 export default {
   name: 'battleroom',
   components: {
-
+    buttonSkill,
+    health
   },
   data(){
     return {
@@ -96,6 +102,16 @@ export default {
 
 .roll{
   animation: shake 3s; 
+}
+
+#buttonSkill{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5rem;
+  margin-left : auto;
+  margin-right : auto;
+
 }
 
 #dice{
