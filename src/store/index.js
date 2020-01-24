@@ -8,7 +8,6 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    unsubscribe: null,
     isPlay: false,
     name: '',
     players: [],
@@ -68,9 +67,15 @@ export default new Vuex.Store({
     SET_UNSUBSCRIBE(state, payload) {
       state.unsubscribe = payload;
     },
+    SET_HEAL(state){
+      state.players[state.myIndex].hp += 25
+    },
+    SET_SUICIDE(state){
+      state.players[state.myIndex].hp = 0
+    }
   },
   actions: {
-    fetchData({ commit, getters, dispatch }) {
+    fetchData({ commit, getters }) {
       const roomId = getters.getRoomId
       if (!roomId) {
         console.log('not joined any rooms yet...');
@@ -88,7 +93,7 @@ export default new Vuex.Store({
               data.players.forEach(player => {
                 if(player.hp <= 0 ){
                   swal.fire({
-                    title: `${player.name} WON!`,
+                    title: `${player.name} LOSE!`,
                     width: 600,
                     padding: '3em',
                     background: '#fff url(/images/trees.png)',
@@ -101,7 +106,7 @@ export default new Vuex.Store({
                   })
                   let sound = new Audio(require('@/assets/soundgroup/wow.mp3'))
                   sound.play()
-                  dispatch('unsubscribe')
+                  unsubscribe()
                 }
               });
             // this block is to check game is finish or not...
@@ -110,14 +115,8 @@ export default new Vuex.Store({
             //   }
             // });
           })
-        commit('SET_UNSUBSCRIBE', unsubscribe)
+          return unsubscribe
       }
-    },
-    unsubscribe({commit, state}) {
-      if (typeof state.unsubscribe === 'function')
-        state.unsubscribe()
-      commit('SET_UNSUBSCRIBE', null)
-      router.push('/login')
     },
     async hit({ getters, commit }, payload) {
       const damage = payload*getters.getBaseDamage;

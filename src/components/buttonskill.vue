@@ -1,8 +1,8 @@
 <template>
     <div>
-    <i id='shield' class="fas fa-shield-alt skill" @click="skill"> Shield</i>
+    <i v-if="heal" id='shield' class="fas fa-shield-alt skill" @click="doHeal"> Heal</i>
     <i v-if="doubleattack" class="fas fa-khanda skill" @click="skill"> Double Attack</i>
-    <i class="fas fa-skull-crossbones skill" @click="skill"> Secret</i>
+    <i v-if="suicide" class="fas fa-skull-crossbones skill" @click="doSuicide"> Secret</i>
     <!-- <bar></bar> -->
     </div>
 </template>
@@ -14,7 +14,9 @@ export default {
   },
   data () {
     return {
-      doubleattack: true
+      doubleattack: true,
+      heal : true,
+      suicide : true
     }
   },
   methods: {
@@ -24,12 +26,17 @@ export default {
       this.doubleattack = false
       this.$store.commit('SET_BASEDAMAGE', 10)
     },
-    decrease: function () {
-      let sound = new Audio(require('../assets/soundgroup/clickButton.ogg'))
+    doHeal: function () {
+      let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
       sound.play()
+      this.heal = false
+      this.$store.commit("SET_HEAL")
     },
-    decrease1: function () {
-    //   this.health1 = this.health1 -10
+    doSuicide: function () {
+      let sound = new Audio(require('../assets/soundgroup/skill.mp3'))
+      sound.play()
+      this.suicide = false
+      this.$store.commit("SET_SUICIDE")
     }
   },
   computed: {
